@@ -22,5 +22,6 @@ if __name__ == "__main__":
     graph = nx.read_gpickle("graph.gpickle")
     node_sizes = get_node_sizes(graph)
     node_weights = get_node_weights(graph)
-    visualize_graph(graph, node_sizes, node_weights, layout="graphviz", filename="spring.html", title="")
+    layout = "random"
+    visualize_graph(graph, node_sizes, node_weights, layout, filename=layout+".html", title="")
 
