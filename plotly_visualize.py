@@ -8,39 +8,27 @@ from networkx.drawing.nx_agraph import graphviz_layout
 
 def reformat_graph_layout(G, layout):
     '''
-    this method provide positions and reformatted graph to be used by
-    plotly. node_labels also different in graphviz and other formats
+    this method provide positions based on layout algorithm
     :param G:
     :param layout:
     :return:
     '''
     if layout == "graphviz":
-        keys = G.nodes()
-        values = range(len(G.nodes()))
-        dictionary = dict(zip(keys, values))
-        node_labels = {v: k for k, v in dictionary.items()}
-        G = nx.relabel_nodes(G, dictionary)
         positions = graphviz_layout(G)
     elif layout == "spring":
         positions = nx.fruchterman_reingold_layout(G, k=0.5, iterations=1000)
-        keys = G.nodes()
-        node_labels = dict(zip(keys, keys))
     elif layout == "spectral":
         positions = nx.spectral_layout(G, scale=0.5)
-        keys = G.nodes()
-        node_labels = dict(zip(keys, keys))
     elif layout=="random":
         positions = nx.random_layout(G)
-        keys = G.nodes()
-        node_labels = dict(zip(keys, keys))
     else:
         raise Exception("please specify the layout from graphviz, spring, spectral or random")
 
-    return G, positions, node_labels
+    return positions
 
 
-def visualize_graph(G, node_sizes, node_weights, layout="graphviz", filename ="netwrokx", title=""):
-    G, positions, node_labels = reformat_graph_layout(G, layout)
+def visualize_graph(G, node_labels, node_sizes=[], edge_weights=[], layout="graphviz", filename ="netwrokx", title=""):
+    positions = reformat_graph_layout(G, layout)
 
     edge_trace = Scatter(
         x=[],
@@ -55,8 +43,11 @@ def visualize_graph(G, node_sizes, node_weights, layout="graphviz", filename ="n
         edge_trace['x'] += [x0, x1, None]
         edge_trace['y'] += [y0, y1, None]
 
-    for weight in node_weights:
-        edge_trace['line']['width'].append(weight)
+    if edge_weights:
+        for weight in edge_weights:
+            edge_trace['line']['width'].append(weight)
+    else:
+        edge_trace['line']['width'] = [1]*len(G.edges())
 
     node_trace = Scatter(
         x=[],
@@ -91,11 +82,16 @@ def visualize_graph(G, node_sizes, node_weights, layout="graphviz", filename ="n
     for adjacencies in G.adjacency_list():
         node_trace['marker']['color'].append(len(adjacencies))
 
-    for node in G.nodes():
-        node_trace['text'].append(node_labels[node])
 
-    for size in node_sizes:
-        node_trace['marker']['size'].append(size)
+    for node in node_labels:
+        node_trace['text'].append(node)
+
+    if node_sizes:
+        for size in node_sizes:
+            node_trace['marker']['size'].append(size)
+    else:
+        node_trace['marker']['size'] = [1]*len(G.nodes())
+
 
     fig = Figure(data=Data([edge_trace, node_trace]),
                  layout=Layout(
