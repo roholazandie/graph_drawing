@@ -82,9 +82,12 @@ def visualize_graph(G, node_labels, node_sizes=[], edge_weights=[], layout="grap
     for adjacencies in G.adjacency_list():
         node_trace['marker']['color'].append(len(adjacencies))
 
+    if not node_labels:
+        node_labels = G.nodes()
 
     for node in node_labels:
         node_trace['text'].append(node)
+
 
     if node_sizes:
         for size in node_sizes:
