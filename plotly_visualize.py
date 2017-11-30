@@ -117,3 +117,109 @@ def visualize_graph(G, node_labels, node_sizes=[], edge_weights=[], layout="grap
     offpy(fig, filename=filename, auto_open=True, show_link=False)
 
 
+def visualize_graph_3d(G, node_labels, node_sizes, filename):
+    edge_trace = Scatter3d(x=[],
+                       y=[],
+                       z=[],
+                       mode='lines',
+                       line=Line(color='rgba(136, 136, 136, .8)', width=1),
+                       hoverinfo='none'
+                       )
+
+
+    node_trace = Scatter3d(x=[],
+                       y=[],
+                       z=[],
+                       mode='markers',
+                       #name='actors',
+                       marker=Marker(symbol='dot',
+                                     size=[],
+                                     color=[],
+                                     colorscale='Jet',#'Viridis',
+                                     colorbar=dict(
+                                         thickness=15,
+                                         title='Node Connections',
+                                         xanchor='left',
+                                         titleside='right'
+                                     ),
+                                     line=Line(color='rgb(50,50,50)', width=0.5)
+                                     ),
+                       text=[],
+                       hoverinfo='text'
+                       )
+
+    positions = nx.fruchterman_reingold_layout(G, dim=3, k=0.5, iterations=1000)
+
+
+
+    for edge in G.edges():
+        x0, y0, z0 = positions[edge[0]]
+        x1, y1, z1 = positions[edge[1]]
+        edge_trace['x'] += [x0, x1, None]
+        edge_trace['y'] += [y0, y1, None]
+        edge_trace['z'] += [z0, z1, None]
+
+
+    for node in G.nodes():
+        x, y, z = positions[node]
+        node_trace['x'].append(x)
+        node_trace['y'].append(y)
+        node_trace['z'].append(z)
+
+
+    for adjacencies in G.adjacency_list():
+        node_trace['marker']['color'].append(len(adjacencies))
+
+    for size in node_sizes:
+        node_trace['marker']['size'].append(size)
+
+
+    for node in node_labels:
+        node_trace['text'].append(node)
+
+    axis = dict(showbackground=False,
+                showline=False,
+                zeroline=False,
+                showgrid=False,
+                showticklabels=False,
+                title=''
+                )
+
+    layout = Layout(
+        title="",
+        width=1000,
+        height=1000,
+        showlegend=False,
+        scene=Scene(
+            xaxis=XAxis(axis),
+            yaxis=YAxis(axis),
+            zaxis=ZAxis(axis),
+        ),
+        margin=Margin(
+            t=100
+        ),
+        hovermode='closest',
+        annotations=Annotations([
+            Annotation(
+                showarrow=False,
+                text="",
+                xref='paper',
+                yref='paper',
+                x=0,
+                y=0.1,
+                xanchor='left',
+                yanchor='bottom',
+                font=Font(
+                    size=14
+                )
+            )
+        ]), )
+
+    data = Data([node_trace, edge_trace])
+    fig = Figure(data=data, layout=layout)
+
+    offpy(fig, filename=filename, auto_open=True, show_link=False)
+
+
+
+
