@@ -1,5 +1,6 @@
 # Graph Drawing using Plotly+Graphviz
 This project shows a usecase of using graphviz layout on plotly network plot.
+You can read more about this repository [this](https://medium.com/@hilbert.cantor/network-plot-with-plotly-and-graphviz-ebd7778073b) medium post.
 
 
 # Installation
@@ -29,3 +30,5 @@ plot. Here is one call:
 `visualize_graph(G, node_labels, node_sizes, edge_weights, layout, filename="outputs/test.html", title="My title")`
 
 You should be careful about the order of the parameters list. Just use networkx call to edges and nodes lists.
+
+You can also use the 3d version of the graph visualization which is based on

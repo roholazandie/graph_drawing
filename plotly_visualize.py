@@ -18,7 +18,7 @@ def reformat_graph_layout(G, layout):
     elif layout == "spring":
         positions = nx.fruchterman_reingold_layout(G, k=0.5, iterations=1000)
     elif layout == "spectral":
-        positions = nx.spectral_layout(G, scale=0.5)
+        positions = nx.spectral_layout(G, scale=0.1)
     elif layout=="random":
         positions = nx.random_layout(G)
     else:

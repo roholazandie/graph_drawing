@@ -27,7 +27,7 @@ if __name__ == "__main__":
     node_sizes = get_node_sizes(graph)
     edge_weights = get_edge_weights(graph)
     node_labels = get_node_labels(graph)
-    layout = "graphviz"
+    layout = "spectral"
     visualize_graph(graph, node_labels, node_sizes, edge_weights, layout, filename="outputs/"+layout+".html", title=layout)
     #visualize_graph(graph, node_labels, node_sizes, layout, filename="outputs/"+layout+".html", title="")
 
