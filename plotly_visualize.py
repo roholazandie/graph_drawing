@@ -117,7 +117,7 @@ def visualize_graph(G, node_labels, node_sizes=[], edge_weights=[], layout="grap
     offpy(fig, filename=filename, auto_open=True, show_link=False)
 
 
-def visualize_graph_3d(G, node_labels, node_sizes, filename):
+def visualize_graph_3d(G, node_labels, node_sizes, filename, title="3d"):
     edge_trace = Scatter3d(x=[],
                        y=[],
                        z=[],
@@ -186,7 +186,7 @@ def visualize_graph_3d(G, node_labels, node_sizes, filename):
                 )
 
     layout = Layout(
-        title="",
+        title=title,
         width=1000,
         height=1000,
         showlegend=False,

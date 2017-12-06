@@ -22,4 +22,4 @@ edge_weights = get_edge_weights(graph)
 node_labels = get_node_labels(graph)
 layout = "graphviz"
 filename= "outputs/"+layout+"3d.html"
-visualize_graph_3d(graph, node_labels, node_sizes, filename=filename)
+visualize_graph_3d(graph, node_labels, node_sizes, filename=filename, title="3D visualization")
