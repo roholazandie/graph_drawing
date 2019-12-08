@@ -18,7 +18,6 @@ build/
 models/*
 word_models/*
 tensorboard/*
-*.txt
 *.dict
 *.mm
 *.bin
