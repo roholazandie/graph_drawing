@@ -33,4 +33,5 @@ You should be careful about the order of the parameters list. Just use networkx 
 
 You can also use the 3d version of the graph visualization which is based on spring layout.
 for 3d usage you can do like this:
+
 `visualize_graph_3d(graph, node_labels, node_sizes, filename="outputs/test.html")`
