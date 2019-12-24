@@ -1,3 +1,4 @@
 networkx==1.11
 plotly==2.0.16
 pygraphviz==1.3.1
+numpy
