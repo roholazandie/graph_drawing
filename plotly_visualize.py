@@ -45,7 +45,8 @@ def visualize_graph(G, node_labels, node_sizes=[], edge_weights=[], layout="grap
 
     if edge_weights:
         for weight in edge_weights:
-            edge_trace['line']['width']+=tuple([weight])
+            #edge_trace['line']['width']+=tuple([weight])
+            edge_trace['line']['width'] = weight
     else:
         edge_trace['line']['width'] = [1]*len(G.edges())
 
@@ -55,9 +56,9 @@ def visualize_graph(G, node_labels, node_sizes=[], edge_weights=[], layout="grap
         text=[],
         mode='markers+text',
         textfont=dict(family='Calibri (Body)', size=25, color='black'),
-        opacity=100,
+        opacity=1,
         # hoverinfo='text',
-        marker=Marker(
+        marker=dict(
             showscale=True,
             # colorscale options
             # 'Greys' | 'Greens' | 'Bluered' | 'Hot' | 'Picnic' | 'Portland' |
