@@ -40,12 +40,12 @@ def visualize_graph(G, node_labels, node_sizes=[], edge_weights=[], layout="grap
     for edge in G.edges():
         x0, y0 = positions[edge[0]]
         x1, y1 = positions[edge[1]]
-        edge_trace['x'] += [x0, x1, None]
-        edge_trace['y'] += [y0, y1, None]
+        edge_trace['x'] += tuple([x0, x1, None])
+        edge_trace['y'] += tuple([y0, y1, None])
 
     if edge_weights:
         for weight in edge_weights:
-            edge_trace['line']['width'].append(weight)
+            edge_trace['line']['width']+=tuple([weight])
     else:
         edge_trace['line']['width'] = [1]*len(G.edges())
 
@@ -76,22 +76,21 @@ def visualize_graph(G, node_labels, node_sizes=[], edge_weights=[], layout="grap
 
     for node in G.nodes():
         x, y = positions[node]
-        node_trace['x'].append(x)
-        node_trace['y'].append(y)
-
-    for adjacencies in G.adjacency_list():
-        node_trace['marker']['color'].append(len(adjacencies))
+        node_trace['x'] += tuple([x])
+        node_trace['y'] += tuple([y])
+        
+    for adjacencies in G.adjacency():
+        node_trace['marker']['color']+=tuple([len(adjacencies)])
 
     if not node_labels:
         node_labels = G.nodes()
 
     for node in node_labels:
-        node_trace['text'].append(node)
-
+        node_trace['text'] +=tuple([node])
 
     if node_sizes:
         for size in node_sizes:
-            node_trace['marker']['size'].append(size)
+            node_trace['marker']['size']+=tuple([size])
     else:
         node_trace['marker']['size'] = [1]*len(G.nodes())
 
@@ -155,27 +154,27 @@ def visualize_graph_3d(G, node_labels, node_sizes, filename, title="3d"):
     for edge in G.edges():
         x0, y0, z0 = positions[edge[0]]
         x1, y1, z1 = positions[edge[1]]
-        edge_trace['x'] += [x0, x1, None]
-        edge_trace['y'] += [y0, y1, None]
-        edge_trace['z'] += [z0, z1, None]
+        edge_trace['x'] += tuple([x0, x1, None])
+        edge_trace['y'] += tuple([y0, y1, None])
+        edge_trace['z'] += tuple([z0, z1, None])
 
 
     for node in G.nodes():
         x, y, z = positions[node]
-        node_trace['x'].append(x)
-        node_trace['y'].append(y)
-        node_trace['z'].append(z)
+        node_trace['x'] += tuple([x])
+        node_trace['y'] += tuple([y])
+        node_trace['z'] += tuple([z])
 
 
-    for adjacencies in G.adjacency_list():
-        node_trace['marker']['color'].append(len(adjacencies))
+    for adjacencies in G.adjacency():
+        node_trace['marker']['color']+=tuple([len(adjacencies)])
 
     for size in node_sizes:
-        node_trace['marker']['size'].append(size)
+        node_trace['marker']['size']+=tuple([size])
 
 
     for node in node_labels:
-        node_trace['text'].append(node)
+        node_trace['text'] +=tuple([node])
 
     axis = dict(showbackground=False,
                 showline=False,
