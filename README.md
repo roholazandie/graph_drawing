@@ -1,37 +1,77 @@
-# Graph Drawing using Plotly+Graphviz
-This project shows a usecase of using graphviz layout on plotly network plot.
-You can read more about this repository [this](https://medium.com/@hilbert.cantor/network-plot-with-plotly-and-graphviz-ebd7778073b) medium post.
+# Graph Visualization Tool
 
+This repository provides tools to visualize graphs using Plotly. It supports both 2D and 3D visualizations with customizable layouts, node sizes, edge weights, and edge colors.
 
-# Installation
-First of all you need to install the graphviz package(for ubuntu):
+## Features
 
-`> sudo apt-get install graphviz libgraphviz-dev pkg-config`
+- Visualize graphs in 2D or 3D.
+- Support for various layout algorithms (`graphviz`, `spring`, `spectral`, `random`).
+- Customize node sizes, edge weights, and edge colors.
+- Generate output as interactive HTML files.
 
-And then install the requirements.txt file:
+## Installation
 
-`> pip install -r requirements.txt`
+1. Install Graphviz (for Ubuntu):
 
-the only requirements are plotly and networkx and pygraphviz.
+   ```bash
+   sudo apt-get install graphviz libgraphviz-dev pkg-config
+   ```
 
-# Motivation
-The motivation of writing this script is to provide a more easier and appealing network plots
-using beautiful plotly plots and graphviz layout.
+2. Install Python dependencies:
 
-# Usage
-After installation of requirements then you can take a look at the main script. There are couple of ways to call the visualize_graph method.
-In the simplest format you just need to pass the graph (in networkx format).
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-`visualize_graph(G)`
+## Usage
 
-in full format you can specify node labels, node sizes, edge weights, layout, file_name and title of the
-plot. Here is one call:
+### Running the Main Script
 
-`visualize_graph(G, node_labels, node_sizes, edge_weights, layout, filename="outputs/test.html", title="My title")`
+To visualize a graph, run the main script with the following command-line arguments:
 
-You should be careful about the order of the parameters list. Just use networkx call to edges and nodes lists.
+```bash
+python main.py --layout <layout> --node_size <size> --output <output_file> --title <title>
+```
 
-You can also use the 3d version of the graph visualization which is based on spring layout.
-for 3d usage you can do like this:
+### Command-line Options
 
-`visualize_graph_3d(graph, node_labels, node_sizes, filename="outputs/test.html")`
+- `--layout`: Specifies the layout algorithm for positioning the graph. Options: `graphviz`, `spring`, `spectral`, `random`. Default: `graphviz`.
+- `--node_size`: Sets the size of the nodes. Default: `20`.
+- `--output`: Specifies the output file name for the HTML visualization. Default: `outputs/graphviz.html`.
+- `--title`: Sets the title for the visualization. Default: `Graph Visualization`.
+
+### Example
+
+#### 2D Graph Visualization
+
+```bash
+python main.py --layout graphviz --node_size 20 --output outputs/graphviz.html --title "2D Graph Visualization"
+```
+
+#### 3D Graph Visualization
+
+```bash
+python main.py --layout spring --node_size 30 --output outputs/spring_3d.html --title "Spring Layout 3D Visualization"
+```
+
+### Additional Layouts
+
+You can add new layout options by extending the `--layout` argument in the script and implementing the corresponding layout logic.
+
+## Repository Structure
+
+- `main.py`: The main script for visualizing graphs.
+- `plotly_visualize.py`: Helper functions for 2D and 3D visualizations.
+- `outputs/`: Directory for storing the generated HTML files.
+
+## Contributing
+
+Contributions are welcome! Feel free to open issues or create pull requests to improve this repository.
+
+## License
+
+This project is licensed under the MIT License.
+
+## Additional Resources
+
+For more details on using Plotly with Graphviz, check out [this Medium post](https://medium.com/@hilbert.cantor/network-plot-with-plotly-and-graphviz-ebd7778073b).

@@ -1,9 +1,8 @@
 from plotly.graph_objs import *
 from plotly.offline import plot as offpy
 import networkx as nx
+from typing import Optional, Union, List, Dict
 from networkx.drawing.nx_agraph import graphviz_layout
-
-
 
 
 def reformat_graph_layout(G, layout):
@@ -27,198 +26,246 @@ def reformat_graph_layout(G, layout):
     return positions
 
 
-def visualize_graph(G, node_labels, node_sizes=[], edge_weights=[], layout="graphviz", filename ="netwrokx", title=""):
+import plotly.graph_objects as go
+
+
+def visualize_graph(
+        G: nx.Graph,
+        node_labels: Optional[Dict[int, str]] = None,
+        node_sizes: Union[int, List[int]] = 10,
+        edge_weights: Union[int, List[int]] = 10,
+        edge_colors: Union[str, Dict[tuple, str]] = 'black',
+        layout: str = "graphviz",
+        filename: str = "networkx",
+        title: str = ""
+) -> None:
+    """
+    Visualize a NetworkX graph using Plotly.
+
+    Parameters:
+        G (nx.Graph): The input graph to visualize.
+        node_labels (Optional[Dict[int, str]]): Labels for the nodes. Defaults to None.
+        node_sizes (Union[int, List[int]]): Size(s) for the nodes. Defaults to 10.
+        edge_weights (Union[int, List[int]]): Width(s) for the edges. Defaults to 10.
+        edge_colors (Union[str, Dict[tuple, str]]): Color(s) for the edges. Defaults to 'black'.
+        layout (str): Layout algorithm to use for positioning. Defaults to "graphviz".
+        filename (str): Output filename for the HTML visualization. Defaults to "networkx".
+        title (str): Title for the graph visualization. Defaults to an empty string.
+    """
     positions = reformat_graph_layout(G, layout)
 
-    edge_trace = Scatter(
-        x=[],
-        y=[],
-        line=Line(width=[], color='rgba(136, 136, 136, .8)'),
-        hoverinfo='none',
-        mode='lines')
+    # Ensure edge_weights and node_sizes are lists
+    edge_weights = (
+        [edge_weights] * len(G.edges())
+        if isinstance(edge_weights, int)
+        else edge_weights
+    )
 
-    for edge in G.edges():
+    node_sizes = (
+        [node_sizes] * len(G.nodes())
+        if isinstance(node_sizes, int)
+        else node_sizes
+    )
+
+    # Initialize edge traces
+    edge_traces = []
+    for edge, edge_weight in zip(G.edges(), edge_weights):
         x0, y0 = positions[edge[0]]
         x1, y1 = positions[edge[1]]
-        edge_trace['x'] += [x0, x1, None]
-        edge_trace['y'] += [y0, y1, None]
 
-    if edge_weights:
-        for weight in edge_weights:
-            edge_trace['line']['width'].append(weight)
-    else:
-        edge_trace['line']['width'] = [1]*len(G.edges())
+        match edge_colors:
+            case str() as color:
+                edge_color = color
+            case dict() as color_map:
+                edge_color = color_map.get(edge, 'black')
+            case _:
+                edge_color = 'black'
 
-    node_trace = Scatter(
-        x=[],
-        y=[],
-        text=[],
-        mode='markers+text',
-        textfont=dict(family='Calibri (Body)', size=25, color='black'),
-        opacity=100,
-        # hoverinfo='text',
-        marker=Marker(
-            showscale=True,
-            # colorscale options
-            # 'Greys' | 'Greens' | 'Bluered' | 'Hot' | 'Picnic' | 'Portland' |
-            # Jet' | 'RdBu' | 'Blackbody' | 'Earth' | 'Electric' | 'YIOrRd' | 'YIGnBu'
-            colorscale='Jet',
-            reversescale=True,
-            color=[],
-            size=[],
-            colorbar=dict(
-                thickness=15,
-                title='Node Connections',
-                xanchor='left',
-                titleside='right'
-            ),
-            line=dict(width=2)))
+        edge_trace = go.Scatter(
+            x=[x0, x1],
+            y=[y0, y1],
+            line=dict(width=edge_weight, color=edge_color),
+            hoverinfo='none',
+            mode='lines'
+        )
+        edge_traces.append(edge_trace)
 
+    # Initialize node trace
+    node_x, node_y, node_colors = [], [], []
     for node in G.nodes():
         x, y = positions[node]
-        node_trace['x'].append(x)
-        node_trace['y'].append(y)
+        node_x.append(x)
+        node_y.append(y)
+        node_colors.append(len(list(G.neighbors(node))))  # Color based on degree
 
-    for adjacencies in G.adjacency_list():
-        node_trace['marker']['color'].append(len(adjacencies))
+    node_trace = go.Scatter(
+        x=node_x,
+        y=node_y,
+        text=[node_labels.get(node, str(node)) for node in G.nodes()] if node_labels else list(G.nodes()),
+        mode='markers+text',
+        textfont=dict(family='Calibri (Body)', size=15, color='white'),
+        marker=dict(
+            size=node_sizes,
+            color=node_colors,
+            colorscale='Viridis',
+            showscale=True,
+            colorbar=dict(
+                thickness=15,
+                title='Node Degree',
+                xanchor='left',
+                titleside='right'
+            )
+        )
+    )
 
-    if not node_labels:
-        node_labels = G.nodes()
+    # Assemble the figure
+    fig = go.Figure(
+        data=edge_traces + [node_trace],
+        layout=go.Layout(
+            title=f'<br>{title}',
+            titlefont=dict(size=16),
+            showlegend=False,
+            width=1500,
+            height=800,
+            hovermode='closest',
+            margin=dict(b=20, l=350, r=5, t=200),
+            annotations=[dict(
+                text="",
+                showarrow=False,
+                xref="paper", yref="paper",
+                x=0.005, y=-0.002)],
+            xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+            yaxis=dict(showgrid=False, zeroline=False, showticklabels=False)
+        )
+    )
 
-    for node in node_labels:
-        node_trace['text'].append(node)
-
-
-    if node_sizes:
-        for size in node_sizes:
-            node_trace['marker']['size'].append(size)
-    else:
-        node_trace['marker']['size'] = [1]*len(G.nodes())
-
-
-    fig = Figure(data=Data([edge_trace, node_trace]),
-                 layout=Layout(
-                     title='<br>' + title,
-                     titlefont=dict(size=16),
-                     showlegend=False,
-                     width=1500,
-                     height=800,
-                     hovermode='closest',
-                     margin=dict(b=20, l=350, r=5, t=200),
-                     # family='Courier New, monospace', size=18, color='#7f7f7f',
-                     annotations=[dict(
-                         text="",
-                         showarrow=False,
-                         xref="paper", yref="paper",
-                         x=0.005, y=-0.002)],
-                     xaxis=XAxis(showgrid=False, zeroline=False, showticklabels=False),
-                     yaxis=YAxis(showgrid=False, zeroline=False, showticklabels=False)))
-
-    offpy(fig, filename=filename, auto_open=True, show_link=False)
-
-
-def visualize_graph_3d(G, node_labels, node_sizes, filename, title="3d"):
-    edge_trace = Scatter3d(x=[],
-                       y=[],
-                       z=[],
-                       mode='lines',
-                       line=Line(color='rgba(136, 136, 136, .8)', width=1),
-                       hoverinfo='none'
-                       )
-
-
-    node_trace = Scatter3d(x=[],
-                       y=[],
-                       z=[],
-                       mode='markers',
-                       #name='actors',
-                       marker=Marker(symbol='dot',
-                                     size=[],
-                                     color=[],
-                                     colorscale='Jet',#'Viridis',
-                                     colorbar=dict(
-                                         thickness=15,
-                                         title='Node Connections',
-                                         xanchor='left',
-                                         titleside='right'
-                                     ),
-                                     line=Line(color='rgb(50,50,50)', width=0.5)
-                                     ),
-                       text=[],
-                       hoverinfo='text'
-                       )
-
-    positions = nx.fruchterman_reingold_layout(G, dim=3, k=0.5, iterations=1000)
+    # Render the figure
+    fig.write_html(filename, auto_open=True)
 
 
 
-    for edge in G.edges():
+
+def visualize_graph_3d(
+    G: nx.Graph,
+    node_labels: Optional[Dict[int, str]] = None,
+    node_sizes: Union[int, List[int]] = 10,
+    edge_weights: Union[int, List[int]] = 2,
+    edge_colors: Union[str, Dict[tuple, str]] = 'black',
+    layout: str = "fr",
+    filename: str = "networkx_3d",
+    title: str = "3D Graph Visualization"
+) -> None:
+    """
+    Visualize a 3D NetworkX graph using Plotly.
+
+    Parameters:
+        G (nx.Graph): The input graph to visualize.
+        node_labels (Optional[Dict[int, str]]): Labels for the nodes. Defaults to None.
+        node_sizes (Union[int, List[int]]): Size(s) for the nodes. Defaults to 10.
+        edge_weights (Union[int, List[int]]): Width(s) for the edges. Defaults to 2.
+        edge_colors (Union[str, Dict[tuple, str]]): Color(s) for the edges. Defaults to 'black'.
+        layout (str): Layout algorithm to use for positioning. Defaults to "fr".
+        filename (str): Output filename for the HTML visualization. Defaults to "networkx_3d".
+        title (str): Title for the graph visualization. Defaults to "3D Graph Visualization".
+    """
+    # Generate 3D positions for the graph
+    positions = nx.fruchterman_reingold_layout(G, dim=3) if layout == "fr" else nx.spring_layout(G, dim=3)
+
+    # Ensure edge_weights and node_sizes are lists
+    edge_weights = (
+        [edge_weights] * len(G.edges())
+        if isinstance(edge_weights, int)
+        else edge_weights
+    )
+
+    node_sizes = (
+        [node_sizes] * len(G.nodes())
+        if isinstance(node_sizes, int)
+        else node_sizes
+    )
+
+    # Create edge traces
+    edge_traces = []
+    for edge, weight in zip(G.edges(), edge_weights):
         x0, y0, z0 = positions[edge[0]]
         x1, y1, z1 = positions[edge[1]]
-        edge_trace['x'] += [x0, x1, None]
-        edge_trace['y'] += [y0, y1, None]
-        edge_trace['z'] += [z0, z1, None]
 
+        match edge_colors:
+            case str() as color:
+                edge_color = color
+            case dict() as color_map:
+                edge_color = color_map.get(edge, 'black')
+            case _:
+                edge_color = 'black'
 
+        edge_traces.append(go.Scatter3d(
+            x=[x0, x1, None],
+            y=[y0, y1, None],
+            z=[z0, z1, None],
+            mode='lines',
+            line=dict(width=weight, color=edge_color),
+            hoverinfo='none'
+        ))
+
+    # Create node traces
+    node_x, node_y, node_z, node_colors, node_texts = [], [], [], [], []
     for node in G.nodes():
         x, y, z = positions[node]
-        node_trace['x'].append(x)
-        node_trace['y'].append(y)
-        node_trace['z'].append(z)
+        node_x.append(x)
+        node_y.append(y)
+        node_z.append(z)
+        node_colors.append(len(list(G.neighbors(node))))  # Degree-based coloring
+        node_texts.append(node_labels.get(node, str(node)) if node_labels else str(node))
 
+    node_trace = go.Scatter3d(
+        x=node_x,
+        y=node_y,
+        z=node_z,
+        mode='markers+text',
+        marker=dict(
+            size=node_sizes,
+            color=node_colors,
+            colorscale='Viridis',
+            showscale=True,
+            colorbar=dict(
+                title='Node Degree',
+                thickness=15,
+                xanchor='left',
+                titleside='right'
+            )
+        ),
+        text=node_texts,
+        hoverinfo='text'
+    )
 
-    for adjacencies in G.adjacency_list():
-        node_trace['marker']['color'].append(len(adjacencies))
+    # Configure layout
+    axis_settings = dict(
+        showbackground=False,
+        showline=False,
+        zeroline=False,
+        showgrid=False,
+        showticklabels=False,
+        title=''
+    )
 
-    for size in node_sizes:
-        node_trace['marker']['size'].append(size)
-
-
-    for node in node_labels:
-        node_trace['text'].append(node)
-
-    axis = dict(showbackground=False,
-                showline=False,
-                zeroline=False,
-                showgrid=False,
-                showticklabels=False,
-                title=''
-                )
-
-    layout = Layout(
+    layout = go.Layout(
         title=title,
         width=1000,
         height=1000,
         showlegend=False,
-        scene=Scene(
-            xaxis=XAxis(axis),
-            yaxis=YAxis(axis),
-            zaxis=ZAxis(axis),
+        scene=dict(
+            xaxis=axis_settings,
+            yaxis=axis_settings,
+            zaxis=axis_settings
         ),
-        margin=Margin(
-            t=100
-        ),
-        hovermode='closest',
-        annotations=Annotations([
-            Annotation(
-                showarrow=False,
-                text="",
-                xref='paper',
-                yref='paper',
-                x=0,
-                y=0.1,
-                xanchor='left',
-                yanchor='bottom',
-                font=Font(
-                    size=14
-                )
-            )
-        ]), )
+        margin=dict(t=50, l=0, r=0, b=0)
+    )
 
-    data = Data([node_trace, edge_trace])
-    fig = Figure(data=data, layout=layout)
+    # Assemble figure
+    fig = go.Figure(data=edge_traces + [node_trace], layout=layout)
 
-    offpy(fig, filename=filename, auto_open=True, show_link=False)
+    # Save and open
+    fig.write_html(f"{filename}.html", auto_open=True)
 
 
 
